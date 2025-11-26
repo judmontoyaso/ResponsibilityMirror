@@ -80,6 +80,17 @@ class GoalsProvider extends ChangeNotifier {
 
   Future<void> toggleGoal(String id) async {
     final goal = _goals.firstWhere((g) => g.id == id);
+    
+    // Si intenta marcar como completado, verificar subtareas
+    if (!goal.isCompleted && goal.steps.isNotEmpty) {
+      final allStepsCompleted = goal.stepsCompleted.every((completed) => completed);
+      if (!allStepsCompleted) {
+        print('⚠️ No se puede completar: faltan subtareas');
+        // No hacer nada, retornar sin actualizar
+        return;
+      }
+    }
+    
     final updated = goal.copyWith(
       isCompleted: !goal.isCompleted,
       completedAt: !goal.isCompleted ? DateTime.now() : null,
@@ -101,8 +112,12 @@ class GoalsProvider extends ChangeNotifier {
   int getTodayCompletionRate() {
     final today = dailyGoals;
     final completed = completedToday;
-    if (today.isEmpty) return 0;
-    return ((completed.length / (today.length + completed.length)) * 100).round();
+    final total = today.length + completed.length;
+    
+    if (total == 0) return 0;
+    if (completed.length == total) return 100;
+    
+    return ((completed.length / total) * 100).round();
   }
 
   bool _isToday(DateTime? date) {

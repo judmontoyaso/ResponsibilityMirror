@@ -5,6 +5,10 @@ import '../providers/goals_provider.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/goal_card.dart';
 import '../widgets/add_goal_dialog.dart';
+import 'statistics_screen.dart';
+import 'todo_day_screen.dart';
+import 'metrics_screen.dart';
+import 'personal_rules_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -15,6 +19,26 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Responsibility Mirror'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.assessment),
+            tooltip: 'Mediciones',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const MetricsScreen()),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.bar_chart),
+            tooltip: 'Estadísticas',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const StatisticsScreen()),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () => _showAddGoalDialog(context),
@@ -62,17 +86,223 @@ class HomeScreen extends StatelessWidget {
                   },
                 ),
                 
+                const SizedBox(height: 16),
+                
+                // Botón TODO del día
+                Card(
+                  color: const Color(0xFF51CF66).withOpacity(0.1),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const TodoDayScreen()),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(16),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF51CF66),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.task_alt, color: Colors.white, size: 24),
+                          ),
+                          const SizedBox(width: 16),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'TODO del Día',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF2D3142),
+                                  ),
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  'Gestiona tus tareas diarias',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Color(0xFF6C757D),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(Icons.arrow_forward_ios, size: 18, color: Color(0xFF51CF66)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ).animate()
+                  .fadeIn(duration: 500.ms, delay: 100.ms)
+                  .slideX(begin: -0.2, end: 0, duration: 500.ms, delay: 100.ms),
+                
+                const SizedBox(height: 16),
+                
+                // Metrics Card
+                Card(
+                  color: const Color(0xFF4ECDC4).withOpacity(0.1),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const MetricsScreen()),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(16),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF4ECDC4),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.assessment, color: Colors.white, size: 24),
+                          ),
+                          const SizedBox(width: 16),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Mediciones y Métricas',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF2D3142),
+                                  ),
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  'Análisis completo de tu progreso',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Color(0xFF6C757D),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(Icons.arrow_forward_ios, size: 18, color: Color(0xFF4ECDC4)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ).animate()
+                  .fadeIn(duration: 500.ms, delay: 200.ms)
+                  .slideX(begin: -0.2, end: 0, duration: 500.ms, delay: 200.ms),
+                
+                const SizedBox(height: 16),
+                
+                // Personal Rules Card
+                Card(
+                  color: const Color(0xFFBF40BF).withOpacity(0.1),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const PersonalRulesScreen()),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(16),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFBF40BF),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.shield, color: Colors.white, size: 24),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Reglas Personales',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF2D3142),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    Text(
+                                      '${goalsProvider.personalRules.length} ${goalsProvider.personalRules.length == 1 ? "Principio" : "Principios"}',
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        color: Color(0xFFBF40BF),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    const Text(
+                                      '• Inquebrantables',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Color(0xFF6C757D),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(Icons.arrow_forward_ios, size: 18, color: Color(0xFFBF40BF)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ).animate()
+                  .fadeIn(duration: 500.ms, delay: 300.ms)
+                  .slideX(begin: -0.2, end: 0, duration: 500.ms, delay: 300.ms),
+                
                 const SizedBox(height: 24),
                 
                 // Completion rate
                 _buildCompletionCard(context, goalsProvider),
                 
-                const SizedBox(height: 24),
+                const SizedBox(height: 32),
                 
-                // Life Goals
-                Text(
-                  'Objetivos',
-                  style: Theme.of(context).textTheme.displayMedium,
+                // Life Goals with improved styling
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFF6B6B),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.flag, color: Colors.white, size: 20),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Objetivos de Hoy',
+                      style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 12),
                 
@@ -85,25 +315,6 @@ class HomeScreen extends StatelessWidget {
                       .fadeIn(duration: 400.ms, delay: (200 + entry.key * 100).ms)
                       .slideX(begin: -0.1, end: 0, duration: 400.ms, delay: (200 + entry.key * 100).ms)
                   ),
-                
-                const SizedBox(height: 24),
-                
-                // Personal Rules
-                if (goalsProvider.personalRules.isNotEmpty) ...[
-                  Text(
-                    'Reglas personales',
-                    style: Theme.of(context).textTheme.displayMedium,
-                  ).animate()
-                    .fadeIn(duration: 400.ms, delay: 400.ms)
-                    .slideX(begin: -0.1, end: 0, duration: 400.ms, delay: 400.ms),
-                  const SizedBox(height: 12),
-                  ...goalsProvider.personalRules.asMap().entries.map(
-                    (entry) => GoalCard(goal: entry.value, isRule: true)
-                      .animate()
-                      .fadeIn(duration: 400.ms, delay: (500 + entry.key * 100).ms)
-                      .slideX(begin: -0.1, end: 0, duration: 400.ms, delay: (500 + entry.key * 100).ms)
-                  ),
-                ],
                 
                 const SizedBox(height: 24),
                 

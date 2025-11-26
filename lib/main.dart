@@ -12,11 +12,13 @@ import 'providers/settings_provider.dart';
 import 'providers/phrases_provider.dart';
 import 'providers/notes_provider.dart';
 import 'providers/todo_provider.dart';
+import 'providers/habits_provider.dart';
 import 'services/notification_service.dart';
 import 'screens/home_screen.dart';
 import 'screens/mirror_screen.dart';
 import 'screens/checkin_screen.dart';
 import 'screens/settings_screen.dart';
+import 'screens/habits_screen.dart';
 import 'config/theme.dart';
 import 'models/custom_phrase.dart';
 import 'models/personal_note.dart';
@@ -66,6 +68,7 @@ void main() async {
   await Hive.openBox('notes');
   await Hive.openBox('checkins');
   await Hive.openBox('settings');
+  await Hive.openBox('habits');
   
   // Inicializar notificaciones
   await NotificationService().initialize();
@@ -92,6 +95,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => PhrasesProvider()..init()),
         ChangeNotifierProvider(create: (_) => NotesProvider()..init()),
         ChangeNotifierProvider(create: (_) => TodoProvider()..initialize()),
+        ChangeNotifierProvider(create: (_) => HabitsProvider()),
       ],
       child: MaterialApp(
         title: 'Responsibility Mirror',
@@ -116,6 +120,7 @@ class _MainNavigatorState extends State<MainNavigator> {
   final List<Widget> _screens = [
     const HomeScreen(),
     const MirrorScreen(),
+    const HabitsScreen(),
     const CheckInScreen(),
     const SettingsScreen(),
   ];
@@ -139,6 +144,10 @@ class _MainNavigatorState extends State<MainNavigator> {
           BottomNavigationBarItem(
             icon: Icon(Icons.auto_awesome),
             label: 'Muro',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.bolt),
+            label: 'Hábitos',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.check_circle_outline),

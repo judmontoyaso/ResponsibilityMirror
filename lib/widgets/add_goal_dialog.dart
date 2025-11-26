@@ -4,7 +4,10 @@ import '../models/goal.dart';
 import '../providers/goals_provider.dart';
 
 class AddGoalDialog extends StatefulWidget {
-  const AddGoalDialog({super.key});
+  final Goal? existingGoal;
+  final bool isRule;
+  
+  const AddGoalDialog({super.key, this.existingGoal, this.isRule = false});
 
   @override
   State<AddGoalDialog> createState() => _AddGoalDialogState();
@@ -17,11 +20,32 @@ class _AddGoalDialogState extends State<AddGoalDialog> {
   final List<String> _steps = [];
   GoalType _selectedType = GoalType.daily;
   int _selectedPriority = 1;
+  
+  @override
+  void initState() {
+    super.initState();
+    if (widget.existingGoal != null) {
+      _titleController.text = widget.existingGoal!.title;
+      _descriptionController.text = widget.existingGoal!.description ?? '';
+      _steps.addAll(widget.existingGoal!.steps);
+      _selectedType = widget.existingGoal!.type;
+      _selectedPriority = widget.existingGoal!.priority;
+    } else if (widget.isRule) {
+      _selectedType = GoalType.personal;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final isEditing = widget.existingGoal != null;
+    final title = isEditing 
+      ? 'Editar ${widget.isRule ? "Regla" : "Meta"}'
+      : widget.isRule 
+        ? 'Nueva Regla Personal' 
+        : 'Nueva Meta';
+    
     return AlertDialog(
-      title: const Text('Nueva Meta'),
+      title: Text(title),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -141,30 +165,34 @@ class _AddGoalDialogState extends State<AddGoalDialog> {
               ],
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Tipo',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            SegmentedButton<GoalType>(
-              segments: const [
-                ButtonSegment(
-                  value: GoalType.daily,
-                  label: Text('Diaria'),
-                  icon: Icon(Icons.today),
-                ),
-                ButtonSegment(
-                  value: GoalType.personal,
-                  label: Text('Regla'),
-                  icon: Icon(Icons.star),
-                ),
-              ],
-              selected: {_selectedType},
-              onSelectionChanged: (Set<GoalType> selected) {
-                setState(() => _selectedType = selected.first);
-              },
-            ),
-            const SizedBox(height: 16),
+            
+            // Hide goal type selector when creating/editing a rule
+            if (!widget.isRule) ...[
+              const Text(
+                'Tipo',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              SegmentedButton<GoalType>(
+                segments: const [
+                  ButtonSegment(
+                    value: GoalType.daily,
+                    label: Text('Diaria'),
+                    icon: Icon(Icons.today),
+                  ),
+                  ButtonSegment(
+                    value: GoalType.personal,
+                    label: Text('Regla'),
+                    icon: Icon(Icons.star),
+                  ),
+                ],
+                selected: {_selectedType},
+                onSelectionChanged: (Set<GoalType> selected) {
+                  setState(() => _selectedType = selected.first);
+                },
+              ),
+              const SizedBox(height: 16),
+            ],
             const Text(
               'Prioridad',
               style: TextStyle(fontWeight: FontWeight.bold),
@@ -273,28 +301,47 @@ class _AddGoalDialogState extends State<AddGoalDialog> {
   void _saveGoal() {
     if (_titleController.text.isEmpty) return;
 
-    print('💾 Guardando meta con ${_steps.length} pasos');
-    for (var i = 0; i < _steps.length; i++) {
-      print('   Paso $i: ${_steps[i]}');
-    }
-
     final goalsProvider = context.read<GoalsProvider>();
-    final goal = Goal(
-      id: goalsProvider.createNewGoalId(),
-      title: _titleController.text,
-      description: _descriptionController.text.isEmpty 
-          ? null 
-          : _descriptionController.text,
-      createdAt: DateTime.now(),
-      type: _selectedType,
-      priority: _selectedPriority,
-      steps: _steps,
-    );
-
-    print('✅ Meta creada: ${goal.title}');
-    print('📋 Pasos en la meta: ${goal.steps.length}');
     
-    goalsProvider.addGoal(goal);
+    if (widget.existingGoal != null) {
+      // Editing existing goal
+      print('✏️ Editando meta: ${widget.existingGoal!.title}');
+      final updatedGoal = widget.existingGoal!.copyWith(
+        title: _titleController.text,
+        description: _descriptionController.text.isEmpty 
+            ? null 
+            : _descriptionController.text,
+        type: _selectedType,
+        priority: _selectedPriority,
+        steps: _steps,
+        stepsCompleted: List.filled(_steps.length, false),
+      );
+      goalsProvider.updateGoal(updatedGoal);
+    } else {
+      // Creating new goal
+      print('💾 Guardando meta con ${_steps.length} pasos');
+      for (var i = 0; i < _steps.length; i++) {
+        print('   Paso $i: ${_steps[i]}');
+      }
+
+      final goal = Goal(
+        id: goalsProvider.createNewGoalId(),
+        title: _titleController.text,
+        description: _descriptionController.text.isEmpty 
+            ? null 
+            : _descriptionController.text,
+        createdAt: DateTime.now(),
+        type: widget.isRule ? GoalType.personal : _selectedType,
+        priority: _selectedPriority,
+        steps: _steps,
+      );
+
+      print('✅ Meta creada: ${goal.title}');
+      print('📋 Pasos en la meta: ${goal.steps.length}');
+      
+      goalsProvider.addGoal(goal);
+    }
+    
     Navigator.pop(context);
   }
 
