@@ -148,36 +148,67 @@ class SettingsScreen extends StatelessWidget {
                   const SizedBox(height: 12),
                   
                   // Lista de notificaciones
-                  ...notifProvider.configs.map((config) {
-                    // Formatear horas con minutos
-                    String horasTexto = '';
-                    for (int i = 0; i < config.hours.length; i++) {
-                      final hora = config.hours[i];
-                      final minuto = (config.minutes != null && i < config.minutes!.length) 
-                          ? config.minutes![i] 
-                          : 0;
-                      if (i > 0) horasTexto += ', ';
-                      horasTexto += '${hora.toString().padLeft(2, '0')}:${minuto.toString().padLeft(2, '0')}';
-                    }
-                    
-                    return Card(
-                      child: ListTile(
-                        leading: Switch(
-                          value: config.isEnabled,
-                          onChanged: (_) => notifProvider.toggleNotification(config.id),
-                        ),
-                        title: const Text('Frases aleatorias'),
-                        subtitle: Text(
-                          'Horas: $horasTexto',
-                          style: const TextStyle(fontWeight: FontWeight.w500),
-                        ),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () => notifProvider.deleteNotification(config.id),
+                  if (notifProvider.configs.isEmpty)
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Center(
+                          child: Column(
+                            children: [
+                              Icon(Icons.notifications_off, size: 48, color: Colors.grey[600]),
+                              const SizedBox(height: 12),
+                              Text(
+                                'No hay notificaciones programadas',
+                                style: TextStyle(color: Colors.grey[600]),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    );
-                  }),
+                    )
+                  else
+                    ...notifProvider.configs.map((config) {
+                      // Formatear horas con minutos
+                      String horasTexto = '';
+                      for (int i = 0; i < config.hours.length; i++) {
+                        final hora = config.hours[i];
+                        final minuto = (config.minutes != null && i < config.minutes!.length) 
+                            ? config.minutes![i] 
+                            : 0;
+                        if (i > 0) horasTexto += ', ';
+                        horasTexto += '${hora.toString().padLeft(2, '0')}:${minuto.toString().padLeft(2, '0')}';
+                      }
+                      
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        child: ListTile(
+                          leading: Switch(
+                            value: config.isEnabled,
+                            onChanged: (_) => notifProvider.toggleNotification(config.id),
+                          ),
+                          title: const Text('Frases aleatorias'),
+                          subtitle: Text(
+                            horasTexto,
+                            style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit, size: 20),
+                                onPressed: () => _showEditNotificationDialog(context, config, notifProvider),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete, size: 20),
+                                onPressed: () => notifProvider.deleteNotification(config.id),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
                   
                   const SizedBox(height: 8),
                   
@@ -185,107 +216,6 @@ class SettingsScreen extends StatelessWidget {
                     onPressed: () => _showAddNotificationDialog(context),
                     icon: const Icon(Icons.add),
                     label: const Text('Agregar notificación'),
-                  ),
-                  
-                  const SizedBox(height: 8),
-                  
-                  ElevatedButton.icon(
-                    onPressed: () async {
-                      await NotificationService().showMotivationalNotification();
-                      
-                      if (context.mounted) {
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text('🔔 Notificación enviada'),
-                            content: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text('La notificación fue enviada correctamente.'),
-                                const SizedBox(height: 12),
-                                const Text('Si no la ves:'),
-                                const SizedBox(height: 8),
-                                const Text('1. Baja la barra de notificaciones del emulador'),
-                                const SizedBox(height: 4),
-                                const Text('2. Verifica permisos en Ajustes del sistema'),
-                                const SizedBox(height: 4),
-                                const Text('3. Reinicia el emulador'),
-                              ],
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text('Entendido'),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-                    },
-                    icon: const Icon(Icons.notifications_active),
-                    label: const Text('Probar notificación ahora'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 8),
-                  
-                  // Botón de prueba de 5 segundos
-                  ElevatedButton.icon(
-                    onPressed: () async {
-                      await NotificationService().testScheduledNotification();
-                      
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('⏰ Notificación programada para dentro de 5 segundos'),
-                            duration: Duration(seconds: 3),
-                          ),
-                        );
-                      }
-                    },
-                    icon: const Icon(Icons.science),
-                    label: const Text('Prueba 5 segundos'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.purple,
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 8),
-                  
-                  // Botón para verificar permisos
-                  OutlinedButton.icon(
-                    onPressed: () async {
-                      final hasPermissions = await NotificationService().checkPermissions();
-                      if (context.mounted) {
-                        showDialog(
-                          context: context,
-                          builder: (ctx) => AlertDialog(
-                            backgroundColor: Colors.grey[900],
-                            title: Text(
-                              hasPermissions ? '✅ Permisos OK' : '❌ Sin permisos',
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                            content: Text(
-                              hasPermissions 
-                                ? 'Los permisos de notificación están activos.'
-                                : 'Los permisos de notificación están bloqueados. Ve a Configuración del sistema.',
-                              style: const TextStyle(color: Colors.white70),
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(ctx),
-                                child: const Text('OK'),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-                    },
-                    icon: const Icon(Icons.check_circle_outline),
-                    label: const Text('Verificar permisos'),
                   ),
                   
                   const SizedBox(height: 8),
@@ -355,29 +285,6 @@ class SettingsScreen extends StatelessWidget {
                     ),
                   ),
                 ],
-              );
-            },
-          ),
-          
-          const SizedBox(height: 24),
-          
-          // Cámara
-          Text(
-            'Experimental',
-            style: Theme.of(context).textTheme.displayMedium,
-          ),
-          const SizedBox(height: 12),
-          
-          Consumer<SettingsProvider>(
-            builder: (context, settings, _) {
-              return Card(
-                child: SwitchListTile(
-                  secondary: const Icon(Icons.camera_alt),
-                  title: const Text('Modo espejo con cámara'),
-                  subtitle: const Text('Ver tu rostro en el espejo (opcional)'),
-                  value: settings.cameraMode,
-                  onChanged: (value) => settings.setCameraMode(value),
-                ),
               );
             },
           ),
@@ -707,5 +614,119 @@ class SettingsScreen extends StatelessWidget {
       case NotificationMode.balanced:
         return 'Equilibrado';
     }
+  }
+
+  void _showEditNotificationDialog(BuildContext context, NotificationConfig config, NotificationsProvider notifProvider) {
+    // Reconstruir las horas existentes en formato HH:MM FUERA del builder
+    final List<String> selectedTimes = [];
+    for (int i = 0; i < config.hours.length; i++) {
+      final hour = config.hours[i];
+      final minute = (config.minutes != null && i < config.minutes!.length) 
+          ? config.minutes![i] 
+          : 0;
+      selectedTimes.add('${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}');
+    }
+    
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            backgroundColor: Colors.grey[900],
+            title: const Text('Editar alarma', style: TextStyle(color: Colors.white)),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Text(
+                    'Horas programadas:',
+                    style: TextStyle(color: Colors.white70, fontSize: 14),
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: selectedTimes.map((time) => Chip(
+                      label: Text(time),
+                      deleteIcon: const Icon(Icons.close, size: 18),
+                      onDeleted: () {
+                        setState(() => selectedTimes.remove(time));
+                      },
+                    )).toList(),
+                  ),
+                  
+                  const SizedBox(height: 16),
+                  
+                  OutlinedButton.icon(
+                    onPressed: () async {
+                      final TimeOfDay? picked = await showTimePicker(
+                        context: context,
+                        initialTime: TimeOfDay.now(),
+                        builder: (context, child) {
+                          return Theme(
+                            data: ThemeData.dark(),
+                            child: child!,
+                          );
+                        },
+                      );
+                      
+                      if (picked != null) {
+                        final timeStr = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+                        if (!selectedTimes.contains(timeStr)) {
+                          setState(() => selectedTimes.add(timeStr));
+                        }
+                      }
+                    },
+                    icon: const Icon(Icons.access_time),
+                    label: const Text('Agregar hora'),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancelar'),
+              ),
+              ElevatedButton(
+                onPressed: selectedTimes.isEmpty ? null : () {
+                  final hours = <int>[];
+                  final minutes = <int>[];
+                  
+                  for (var time in selectedTimes) {
+                    final parts = time.split(':');
+                    hours.add(int.parse(parts[0]));
+                    minutes.add(int.parse(parts[1]));
+                  }
+                  
+                  final updated = config.copyWith(
+                    hours: hours,
+                    minutes: minutes,
+                  );
+                  
+                  notifProvider.updateNotification(updated);
+                  Navigator.pop(context);
+                  
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('✅ Alarma actualizada'),
+                      backgroundColor: Colors.green,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  foregroundColor: Colors.black,
+                ),
+                child: const Text('Guardar'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
   }
 }

@@ -267,13 +267,27 @@ class GoalCard extends StatelessWidget {
                 const SizedBox(height: 16),
                 const Text('Pasos:', style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
-                ...steps.asMap().entries.map((e) => ListTile(
-                  dense: true,
-                  leading: Text('${e.key + 1}.'),
-                  title: Text(e.value),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete, size: 20),
-                    onPressed: () => setState(() => steps.removeAt(e.key)),
+                ...steps.asMap().entries.map((e) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    children: [
+                      Text('${e.key + 1}. ', style: const TextStyle(fontWeight: FontWeight.bold)),
+                      Expanded(
+                        child: TextField(
+                          controller: TextEditingController(text: e.value),
+                          decoration: const InputDecoration(
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                            border: OutlineInputBorder(),
+                          ),
+                          onChanged: (value) => steps[e.key] = value,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete, size: 20),
+                        onPressed: () => setState(() => steps.removeAt(e.key)),
+                      ),
+                    ],
                   ),
                 )),
                 Row(

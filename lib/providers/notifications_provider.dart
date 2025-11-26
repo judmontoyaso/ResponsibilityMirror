@@ -17,6 +17,42 @@ class NotificationsProvider extends ChangeNotifier {
 
   NotificationsProvider() {
     loadConfigs();
+    _ensureDefaultNotifications();
+  }
+
+  void _ensureDefaultNotifications() {
+    // Si no hay notificaciones configuradas, agregar las por defecto (6am-9pm cada hora)
+    print('🔔 Verificando notificaciones por defecto. Configs actuales: ${_configs.length}');
+    
+    // Verificar si ya existen notificaciones no personalizadas (por defecto)
+    final hasDefaults = _configs.any((c) => !c.isCustom);
+    
+    if (_configs.isEmpty || !hasDefaults) {
+      print('⚠️ No hay configs por defecto. Creando notificaciones por defecto...');
+      final defaultHours = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
+      
+      // Limpiar notificaciones no personalizadas antiguas si existen
+      _configs.removeWhere((c) => !c.isCustom);
+      
+      for (int hour in defaultHours) {
+        _configs.add(NotificationConfig(
+          id: _uuid.v4(),
+          message: 'Recordatorio brutal',
+          mode: NotificationMode.gogginsBrutal,
+          hours: [hour],
+          minutes: [0],
+          isEnabled: true,
+          isCustom: false,
+        ));
+      }
+      
+      print('✅ Creadas ${_configs.where((c) => !c.isCustom).length} notificaciones por defecto');
+      saveConfigs();
+      _scheduleNotifications();
+      notifyListeners(); // Importante: notificar que cambió la lista
+    } else {
+      print('✅ Ya existen ${_configs.length} notificaciones configuradas');
+    }
   }
 
   void loadConfigs() {
@@ -59,11 +95,24 @@ class NotificationsProvider extends ChangeNotifier {
   }
 
   Future<void> updateNotification(NotificationConfig config) async {
+    print('🔧 Actualizando notificación: ${config.id}');
+    print('   Horas: ${config.hours}');
+    print('   Minutos: ${config.minutes}');
+    
     final index = _configs.indexWhere((c) => c.id == config.id);
+    print('   Índice encontrado: $index');
+    
     if (index != -1) {
       _configs[index] = config;
+      print('   ✅ Configuración actualizada en lista');
       await saveConfigs();
+      print('   ✅ Guardado en Hive');
       await _scheduleNotifications();
+      print('   ✅ Notificaciones reprogramadas');
+      notifyListeners();
+      print('   ✅ Listeners notificados');
+    } else {
+      print('   ❌ No se encontró la notificación');
     }
   }
 

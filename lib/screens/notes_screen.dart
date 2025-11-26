@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/notes_provider.dart';
 import '../models/personal_note.dart';
 
@@ -23,12 +24,10 @@ class NotesScreen extends StatelessWidget {
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          backgroundColor: Colors.grey[900],
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           title: const Text(
             '✍️ Nueva Nota Personal',
             style: TextStyle(
-              color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -40,24 +39,22 @@ class NotesScreen extends StatelessWidget {
                 TextField(
                   controller: controller,
                   maxLines: 5,
-                  style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     hintText: 'Escribe algo sincero para ti mismo...',
-                    hintStyle: TextStyle(color: Colors.grey[600]),
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey[700]!),
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(color: Colors.grey[300]!),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(16),
                       borderSide: BorderSide(color: postItColors[selectedColorIndex], width: 2),
                     ),
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   'Color del Post-it:',
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                  style: TextStyle(color: Colors.grey[700], fontSize: 14, fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 8),
                 Wrap(
@@ -144,11 +141,11 @@ class NotesScreen extends StatelessWidget {
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          backgroundColor: Colors.grey[900],
+          backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text(
+          title: Text(
             '✏️ Editar Nota',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            style: TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold),
           ),
           content: SingleChildScrollView(
             child: Column(
@@ -158,13 +155,13 @@ class NotesScreen extends StatelessWidget {
                 TextField(
                   controller: controller,
                   maxLines: 5,
-                  style: const TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Color(0xFF2D3142)),
                   decoration: InputDecoration(
                     hintText: 'Edita tu nota...',
-                    hintStyle: TextStyle(color: Colors.grey[600]),
+                    hintStyle: TextStyle(color: Colors.grey[400]),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey[700]!),
+                      borderSide: BorderSide(color: Colors.grey[300]!),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -173,9 +170,9 @@ class NotesScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   'Color del Post-it:',
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                  style: TextStyle(color: Colors.grey[700], fontSize: 14, fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 8),
                 Wrap(
@@ -237,9 +234,8 @@ class NotesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
-        backgroundColor: Colors.grey[900],
         title: const Text(
           '📌 Notas del Espejo',
           style: TextStyle(fontWeight: FontWeight.bold),
@@ -281,7 +277,10 @@ class NotesScreen extends StatelessWidget {
             itemCount: notesProvider.notes.length,
             itemBuilder: (context, index) {
               final note = notesProvider.notes[index];
-              return _buildPostItNote(context, note, index);
+              return _buildPostItNote(context, note, index)
+                .animate()
+                .fadeIn(duration: 500.ms, delay: (index * 80).ms)
+                .scale(begin: const Offset(0.8, 0.8), end: const Offset(1, 1), duration: 500.ms, delay: (index * 80).ms, curve: Curves.easeOutBack);
             },
           );
         },
@@ -303,12 +302,9 @@ class NotesScreen extends StatelessWidget {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            backgroundColor: Colors.grey[900],
-            title: const Text('¿Eliminar nota?', style: TextStyle(color: Colors.white)),
-            content: const Text(
-              'Esta nota se eliminará permanentemente.',
-              style: TextStyle(color: Colors.grey),
-            ),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: const Text('¿Eliminar nota?'),
+            content: const Text('Esta nota se eliminará permanentemente.'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
@@ -326,51 +322,66 @@ class NotesScreen extends StatelessWidget {
         );
       },
       child: Transform.rotate(
-        angle: (index % 2 == 0 ? -0.02 : 0.02),
+        angle: (index % 2 == 0 ? -0.015 : 0.015),
         child: Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: color,
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(8),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.3),
-                blurRadius: 8,
-                offset: const Offset(2, 4),
+                color: Colors.black.withOpacity(0.15),
+                blurRadius: 12,
+                offset: const Offset(3, 6),
               ),
             ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Pin visual
-              Container(
-                width: 20,
-                height: 20,
-                decoration: BoxDecoration(
-                  color: Colors.red[700],
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      blurRadius: 4,
-                      offset: const Offset(1, 2),
+              // Pin visual mejorado
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade600,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 4,
+                          offset: const Offset(1, 2),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                    child: Center(
+                      child: Container(
+                        width: 6,
+                        height: 6,
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 12),
-              // Contenido
+              const SizedBox(height: 16),
+              // Contenido con mejor tipografía
               Expanded(
                 child: SingleChildScrollView(
                   child: Text(
                     note.content,
-                    style: const TextStyle(
-                      color: Colors.black87,
-                      fontSize: 14,
-                      height: 1.4,
-                      fontFamily: 'Courier',
+                    style: TextStyle(
+                      color: Colors.grey[900],
+                      fontSize: 15,
+                      height: 1.5,
                       fontWeight: FontWeight.w500,
+                      letterSpacing: 0.2,
                     ),
                   ),
                 ),

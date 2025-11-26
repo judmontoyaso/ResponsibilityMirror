@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/goals_provider.dart';
 import '../providers/settings_provider.dart';
 import '../providers/notes_provider.dart';
+import '../providers/todo_provider.dart';
 import '../models/personal_note.dart';
 import '../widgets/mirror_goal_item.dart';
 import '../widgets/add_goal_dialog.dart';
@@ -15,16 +17,8 @@ class MirrorScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.black,
-              Colors.grey[900]!,
-              Colors.grey[800]!,
-            ],
-          ),
+        decoration: const BoxDecoration(
+          color: Color(0xFFF8F9FA),
         ),
         child: SafeArea(
           child: Consumer<GoalsProvider>(
@@ -73,19 +67,12 @@ class MirrorScreen extends StatelessWidget {
                                         ? 'MURO DE LA RESPONSABILIDAD'
                                         : '${settings.userName.toUpperCase()}\nMURO DE LA RESPONSABILIDAD',
                                     textAlign: TextAlign.center,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontSize: 32,
                                       fontWeight: FontWeight.w900,
-                                      color: Colors.white.withOpacity(0.9),
+                                      color: Color(0xFF2D3142),
                                       letterSpacing: 2,
                                       height: 1.2,
-                                      shadows: [
-                                        Shadow(
-                                          color: Colors.black.withOpacity(0.5),
-                                          offset: const Offset(2, 2),
-                                          blurRadius: 8,
-                                        ),
-                                      ],
                                     ),
                                   );
                                 },
@@ -93,9 +80,9 @@ class MirrorScreen extends StatelessWidget {
                               const SizedBox(height: 8),
                               Text(
                                 _getMirrorQuote(),
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 16,
-                                  color: Colors.white.withOpacity(0.6),
+                                  color: Color(0xFF6C757D),
                                   fontStyle: FontStyle.italic,
                                 ),
                               ),
@@ -114,10 +101,10 @@ class MirrorScreen extends StatelessWidget {
                               children: [
                                 Text(
                                   'MIS REGLAS',
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.white.withOpacity(0.8),
+                                    color: Color(0xFF2D3142),
                                     letterSpacing: 2,
                                   ),
                                 ),
@@ -152,10 +139,10 @@ class MirrorScreen extends StatelessWidget {
                                     children: [
                                       Text(
                                         'NOTAS PARA MI',
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                           fontSize: 20,
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.white.withOpacity(0.8),
+                                          color: Color(0xFF2D3142),
                                           letterSpacing: 2,
                                         ),
                                       ),
@@ -192,16 +179,16 @@ class MirrorScreen extends StatelessWidget {
                         },
                       ),
                       
-                      // Metas del día
+                      // TODO del día
                       SliverToBoxAdapter(
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 24),
                           child: Text(
-                            'HOY',
-                            style: TextStyle(
+                            'TODO DEL DÍA',
+                            style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white.withOpacity(0.8),
+                              color: Color(0xFF2D3142),
                               letterSpacing: 2,
                             ),
                           ),
@@ -210,7 +197,107 @@ class MirrorScreen extends StatelessWidget {
                       
                       const SliverToBoxAdapter(child: SizedBox(height: 12)),
                       
-                      // Lista de metas
+                      // Lista de TODO
+                      Consumer<TodoProvider>(
+                        builder: (context, todoProvider, _) {
+                          if (todoProvider.todos.isEmpty && todoProvider.completedTodos.isEmpty) {
+                            return SliverToBoxAdapter(
+                              child: Padding(
+                                padding: const EdgeInsets.all(24),
+                                child: Center(
+                                  child: Column(
+                                    children: [
+                                      Icon(
+                                        Icons.check_box_outline_blank,
+                                        size: 64,
+                                        color: Colors.grey[400],
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        'Sin tareas para hoy',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      TextButton(
+                                        onPressed: () => _showAddTodoDialog(context, todoProvider),
+                                        child: const Text(
+                                          'Agregar tarea',
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
+                          
+                          return SliverPadding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            sliver: SliverList(
+                              delegate: SliverChildBuilderDelegate(
+                                (context, index) {
+                                  final allTodos = [...todoProvider.todos, ...todoProvider.completedTodos];
+                                  final todo = allTodos[index];
+                                  
+                                  return Card(
+                                    margin: const EdgeInsets.only(bottom: 8),
+                                    color: todo.isCompleted 
+                                      ? Colors.green.withOpacity(0.1) 
+                                      : Colors.grey[100],
+                                    child: ListTile(
+                                      leading: Checkbox(
+                                        value: todo.isCompleted,
+                                        onChanged: (_) => todoProvider.toggleTodo(todo.id),
+                                      ),
+                                      title: Text(
+                                        todo.task,
+                                        style: TextStyle(
+                                          decoration: todo.isCompleted 
+                                            ? TextDecoration.lineThrough 
+                                            : null,
+                                          color: todo.isCompleted 
+                                            ? Colors.grey[600] 
+                                            : const Color(0xFF2D3142),
+                                        ),
+                                      ),
+                                      trailing: IconButton(
+                                        icon: const Icon(Icons.delete_outline, size: 20),
+                                        onPressed: () => todoProvider.deleteTodo(todo.id),
+                                      ),
+                                    ),
+                                  );
+                                },
+                                childCount: todoProvider.todos.length + todoProvider.completedTodos.length,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      
+                      const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                      
+                      // Objetivos del día
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Text(
+                            'OBJETIVOS',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF2D3142),
+                              letterSpacing: 2,
+                            ),
+                          ),
+                        ),
+                      ),
+                      
+                      const SliverToBoxAdapter(child: SizedBox(height: 12)),
+                      
+                      // Lista de objetivos
                       if (goalsProvider.dailyGoals.isEmpty)
                         SliverToBoxAdapter(
                           child: Padding(
@@ -221,22 +308,21 @@ class MirrorScreen extends StatelessWidget {
                                   Icon(
                                     Icons.add_circle_outline,
                                     size: 64,
-                                    color: Colors.white.withOpacity(0.3),
+                                    color: Colors.grey[400],
                                   ),
                                   const SizedBox(height: 16),
                                   Text(
-                                    'Sin compromisos para hoy',
+                                    'Sin objetivos',
                                     style: TextStyle(
                                       fontSize: 18,
-                                      color: Colors.white.withOpacity(0.5),
+                                      color: Colors.grey[600],
                                     ),
                                   ),
                                   const SizedBox(height: 8),
                                   TextButton(
                                     onPressed: () => _showAddGoalDialog(context),
                                     child: const Text(
-                                      'Agregar meta',
-                                      style: TextStyle(color: Colors.white),
+                                      'Agregar objetivo',
                                     ),
                                   ),
                                 ],
@@ -265,14 +351,40 @@ class MirrorScreen extends StatelessWidget {
                     ],
                   ),
                   
-                  // Botón flotante
+                  // Botones flotantes con animación
                   Positioned(
                     bottom: 24,
                     right: 24,
-                    child: FloatingActionButton(
-                      onPressed: () => _showAddGoalDialog(context),
-                      backgroundColor: Colors.white,
-                      child: const Icon(Icons.add, color: Colors.black),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        FloatingActionButton.extended(
+                          heroTag: 'addTodo',
+                          onPressed: () {
+                            final todoProvider = context.read<TodoProvider>();
+                            _showAddTodoDialog(context, todoProvider);
+                          },
+                          backgroundColor: const Color(0xFF51CF66),
+                          icon: const Icon(Icons.check_box_outlined, color: Colors.white),
+                          label: const Text('Tarea', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                          elevation: 4,
+                        )
+                        .animate(onPlay: (controller) => controller.repeat(reverse: true))
+                        .shimmer(delay: 2000.ms, duration: 1500.ms, color: Colors.white.withOpacity(0.3))
+                        .shake(hz: 0.3, duration: 2000.ms, delay: 3000.ms),
+                        const SizedBox(height: 12),
+                        FloatingActionButton.extended(
+                          heroTag: 'addGoal',
+                          onPressed: () => _showAddGoalDialog(context),
+                          backgroundColor: const Color(0xFFFF6B6B),
+                          icon: const Icon(Icons.flag_outlined, color: Colors.white),
+                          label: const Text('Objetivo', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                          elevation: 4,
+                        )
+                        .animate(onPlay: (controller) => controller.repeat(reverse: true))
+                        .shimmer(delay: 2500.ms, duration: 1500.ms, color: Colors.white.withOpacity(0.3))
+                        .shake(hz: 0.3, duration: 2000.ms, delay: 3500.ms),
+                      ],
                     ),
                   ),
                 ],
@@ -334,7 +446,7 @@ class MirrorScreen extends StatelessWidget {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.grey.withOpacity(0.2),
                     blurRadius: 3,
                     offset: const Offset(1, 1),
                   ),
@@ -347,10 +459,10 @@ class MirrorScreen extends StatelessWidget {
               child: Text(
                 note.content,
                 style: const TextStyle(
-                  color: Colors.black87,
-                  fontSize: 12,
-                  height: 1.3,
-                  fontFamily: 'Courier',
+                  color: Color(0xFF2D3142),
+                  fontSize: 15,
+                  height: 1.5,
+                  letterSpacing: 0.2,
                   fontWeight: FontWeight.w500,
                 ),
                 maxLines: 6,
@@ -359,6 +471,48 @@ class MirrorScreen extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showAddTodoDialog(BuildContext context, TodoProvider todoProvider) {
+    final controller = TextEditingController();
+    
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        title: const Text('Nueva tarea', style: TextStyle(color: Colors.white)),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          style: const TextStyle(color: Colors.white),
+          decoration: InputDecoration(
+            hintText: '¿Qué vas a hacer hoy?',
+            hintStyle: TextStyle(color: Colors.grey[400]),
+          ),
+          onSubmitted: (value) {
+            if (value.isNotEmpty) {
+              todoProvider.addTodo(value);
+              Navigator.pop(ctx);
+            }
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (controller.text.isNotEmpty) {
+                todoProvider.addTodo(controller.text);
+                Navigator.pop(ctx);
+              }
+            },
+            child: const Text('Agregar'),
+          ),
+        ],
       ),
     );
   }

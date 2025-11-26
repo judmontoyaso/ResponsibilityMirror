@@ -11,6 +11,7 @@ import 'providers/notifications_provider.dart';
 import 'providers/settings_provider.dart';
 import 'providers/phrases_provider.dart';
 import 'providers/notes_provider.dart';
+import 'providers/todo_provider.dart';
 import 'services/notification_service.dart';
 import 'screens/home_screen.dart';
 import 'screens/mirror_screen.dart';
@@ -19,6 +20,7 @@ import 'screens/settings_screen.dart';
 import 'config/theme.dart';
 import 'models/custom_phrase.dart';
 import 'models/personal_note.dart';
+import 'models/daily_todo.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -58,6 +60,7 @@ void main() async {
   // Registrar adaptadores de Hive
   Hive.registerAdapter(CustomPhraseAdapter());
   Hive.registerAdapter(PersonalNoteAdapter());
+  Hive.registerAdapter(DailyTodoAdapter());
   
   await Hive.openBox('goals');
   await Hive.openBox('notes');
@@ -88,6 +91,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ChangeNotifierProvider(create: (_) => PhrasesProvider()..init()),
         ChangeNotifierProvider(create: (_) => NotesProvider()..init()),
+        ChangeNotifierProvider(create: (_) => TodoProvider()..initialize()),
       ],
       child: MaterialApp(
         title: 'Responsibility Mirror',
@@ -134,7 +138,7 @@ class _MainNavigatorState extends State<MainNavigator> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.auto_awesome),
-            label: 'Espejo',
+            label: 'Muro',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.check_circle_outline),

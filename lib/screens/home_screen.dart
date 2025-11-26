@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/goals_provider.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/goal_card.dart';
@@ -70,7 +71,7 @@ class HomeScreen extends StatelessWidget {
                 
                 // Life Goals
                 Text(
-                  'Metas de mi vida',
+                  'Objetivos',
                   style: Theme.of(context).textTheme.displayMedium,
                 ),
                 const SizedBox(height: 12),
@@ -78,8 +79,11 @@ class HomeScreen extends StatelessWidget {
                 if (goalsProvider.dailyGoals.isEmpty)
                   _buildEmptyState(context)
                 else
-                  ...goalsProvider.dailyGoals.map(
-                    (goal) => GoalCard(goal: goal)
+                  ...goalsProvider.dailyGoals.asMap().entries.map(
+                    (entry) => GoalCard(goal: entry.value)
+                      .animate()
+                      .fadeIn(duration: 400.ms, delay: (200 + entry.key * 100).ms)
+                      .slideX(begin: -0.1, end: 0, duration: 400.ms, delay: (200 + entry.key * 100).ms)
                   ),
                 
                 const SizedBox(height: 24),
@@ -89,19 +93,24 @@ class HomeScreen extends StatelessWidget {
                   Text(
                     'Reglas personales',
                     style: Theme.of(context).textTheme.displayMedium,
-                  ),
+                  ).animate()
+                    .fadeIn(duration: 400.ms, delay: 400.ms)
+                    .slideX(begin: -0.1, end: 0, duration: 400.ms, delay: 400.ms),
                   const SizedBox(height: 12),
-                  ...goalsProvider.personalRules.map(
-                    (rule) => GoalCard(goal: rule, isRule: true)
+                  ...goalsProvider.personalRules.asMap().entries.map(
+                    (entry) => GoalCard(goal: entry.value, isRule: true)
+                      .animate()
+                      .fadeIn(duration: 400.ms, delay: (500 + entry.key * 100).ms)
+                      .slideX(begin: -0.1, end: 0, duration: 400.ms, delay: (500 + entry.key * 100).ms)
                   ),
                 ],
                 
                 const SizedBox(height: 24),
                 
-                // Completed today
+                // Completed today (goals)
                 if (goalsProvider.completedToday.isNotEmpty) ...[
                   Text(
-                    'Completadas hoy ✅',
+                    'Objetivos completados hoy ✅',
                     style: Theme.of(context).textTheme.displayMedium,
                   ),
                   const SizedBox(height: 12),
@@ -119,7 +128,8 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildCompletionCard(BuildContext context, GoalsProvider provider) {
     final rate = provider.getTodayCompletionRate();
-    final total = provider.dailyGoals.length + provider.completedToday.length;
+    // Contar TODOS los objetivos (tanto daily como personal)
+    final total = provider.goals.length;
     final completed = provider.completedToday.length;
     
     return Card(
@@ -128,12 +138,12 @@ class HomeScreen extends StatelessWidget {
         child: Row(
           children: [
             CircularProgressIndicator(
-              value: rate / 100,
+              value: total > 0 ? rate / 100 : 0,
               strokeWidth: 8,
-              backgroundColor: Colors.grey[800],
+              backgroundColor: Colors.grey[300],
               valueColor: AlwaysStoppedAnimation<Color>(
-                rate >= 80 ? Colors.green : 
-                rate >= 50 ? Colors.orange : Colors.red
+                rate >= 80 ? const Color(0xFF51CF66) : 
+                rate >= 50 ? Colors.orange : const Color(0xFFFF6B6B)
               ),
             ),
             const SizedBox(width: 20),
@@ -147,7 +157,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '$completed de $total metas',
+                    '$completed de $total objetivos',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ],
@@ -156,7 +166,11 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
       ),
-    );
+    )
+    .animate()
+    .fadeIn(duration: 600.ms, delay: 100.ms)
+    .slideY(begin: 0.2, end: 0, duration: 600.ms, delay: 100.ms, curve: Curves.easeOutCubic)
+    .shimmer(delay: 800.ms, duration: 1200.ms, color: const Color(0xFF51CF66).withOpacity(0.3));
   }
 
   Widget _buildEmptyState(BuildContext context) {
@@ -172,12 +186,12 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Sin metas. Sin propósito.',
+              'Sin objetivos. Sin propósito.',
               style: Theme.of(context).textTheme.displayMedium,
             ),
             const SizedBox(height: 8),
             Text(
-              'Agrega metas de VIDA y empieza a construir tu legado',
+              'Agrega OBJETIVOS y empieza a construir tu legado',
               style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
