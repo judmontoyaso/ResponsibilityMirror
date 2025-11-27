@@ -45,6 +45,7 @@ class MainActivity: FlutterActivity() {
             // Verificar permiso en Android 12+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 if (!alarmManager.canScheduleExactAlarms()) {
+                    android.util.Log.e("MainActivity", "No hay permiso para alarmas exactas")
                     return false
                 }
             }
@@ -53,6 +54,8 @@ class MainActivity: FlutterActivity() {
                 putExtra("title", title)
                 putExtra("message", message)
                 putExtra("notificationId", notificationId)
+                putExtra("hour", hour)
+                putExtra("minute", minute)
             }
 
             val pendingIntent = PendingIntent.getBroadcast(
@@ -75,15 +78,25 @@ class MainActivity: FlutterActivity() {
                 }
             }
 
-            // Programar alarma exacta
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                calendar.timeInMillis,
-                pendingIntent
-            )
+            // Programar alarma exacta que se repite diariamente
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                alarmManager.setExactAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP,
+                    calendar.timeInMillis,
+                    pendingIntent
+                )
+            } else {
+                alarmManager.setExact(
+                    AlarmManager.RTC_WAKEUP,
+                    calendar.timeInMillis,
+                    pendingIntent
+                )
+            }
 
+            android.util.Log.d("MainActivity", "Alarma programada: $hour:$minute ID=$notificationId para ${calendar.time}")
             return true
         } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "Error programando alarma: ${e.message}")
             e.printStackTrace()
             return false
         }

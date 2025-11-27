@@ -48,10 +48,12 @@ class NotificationsProvider extends ChangeNotifier {
       
       print('✅ Creadas ${_configs.where((c) => !c.isCustom).length} notificaciones por defecto');
       saveConfigs();
-      _scheduleNotifications();
+      _scheduleAllNotifications();
       notifyListeners(); // Importante: notificar que cambió la lista
     } else {
       print('✅ Ya existen ${_configs.length} notificaciones configuradas');
+      // IMPORTANTE: Reprogramar notificaciones al iniciar
+      _scheduleAllNotifications();
     }
   }
 
@@ -91,7 +93,7 @@ class NotificationsProvider extends ChangeNotifier {
   Future<void> addNotification(NotificationConfig config) async {
     _configs.add(config);
     await saveConfigs();
-    await _scheduleNotifications();
+    await _scheduleAllNotifications();
   }
 
   Future<void> updateNotification(NotificationConfig config) async {
@@ -107,7 +109,7 @@ class NotificationsProvider extends ChangeNotifier {
       print('   ✅ Configuración actualizada en lista');
       await saveConfigs();
       print('   ✅ Guardado en Hive');
-      await _scheduleNotifications();
+      await _scheduleAllNotifications();
       print('   ✅ Notificaciones reprogramadas');
       notifyListeners();
       print('   ✅ Listeners notificados');
@@ -119,7 +121,7 @@ class NotificationsProvider extends ChangeNotifier {
   Future<void> deleteNotification(String id) async {
     _configs.removeWhere((c) => c.id == id);
     await saveConfigs();
-    await _scheduleNotifications();
+    await _scheduleAllNotifications();
   }
 
   Future<void> toggleNotification(String id) async {
@@ -129,26 +131,33 @@ class NotificationsProvider extends ChangeNotifier {
         isEnabled: !_configs[index].isEnabled
       );
       await saveConfigs();
-      await _scheduleNotifications();
+      await _scheduleAllNotifications();
     }
   }
 
   Future<void> setMode(NotificationMode mode) async {
     _currentMode = mode;
     await _notificationsBox.put('notificationMode', mode.index);
-    await _scheduleNotifications();
+    await _scheduleAllNotifications();
     notifyListeners();
   }
 
-  Future<void> _scheduleNotifications() async {
+  Future<void> _scheduleAllNotifications() async {
+    print('🔄 Reprogramando TODAS las notificaciones...');
+    print('   Total de configs: ${_configs.length}');
+    print('   Configs habilitadas: ${_configs.where((c) => c.isEnabled).length}');
+    
     await _notificationService.cancelAllNotifications();
     
+    int totalScheduled = 0;
     for (var config in _configs.where((c) => c.isEnabled)) {
       for (int i = 0; i < config.hours.length; i++) {
         final hour = config.hours[i];
         final minute = (config.minutes != null && i < config.minutes!.length) 
             ? config.minutes![i] 
             : 0;
+        
+        print('   📅 Programando: ${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')} - ${config.message}');
         
         await _notificationService.scheduleNotification(
           id: config.id.hashCode + hour * 100 + minute,
@@ -157,8 +166,11 @@ class NotificationsProvider extends ChangeNotifier {
           hour: hour,
           minute: minute,
         );
+        totalScheduled++;
       }
     }
+    
+    print('✅ Total de notificaciones programadas: $totalScheduled');
   }
 
   String _getModeTitle(NotificationMode mode) {

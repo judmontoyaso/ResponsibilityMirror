@@ -121,62 +121,34 @@ class NotificationService {
     );
 
     // Si la hora ya pasó hoy, programar para mañana
-    // Comparar solo hora y minutos, NO segundos
     final nowMinutes = now.hour * 60 + now.minute;
     final scheduledMinutes = hour * 60 + minute;
     
     if (scheduledMinutes < nowMinutes) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
-      print('⏭️ Programando para mañana porque la hora ya pasó');
     } else if (scheduledMinutes == nowMinutes) {
-      // Si es el mismo minuto, verificar si quedan al menos 10 segundos
       if (now.second > 50) {
         scheduledDate = scheduledDate.add(const Duration(days: 1));
-        print('⏭️ Programando para mañana porque el minuto casi termina');
       }
     }
     
     final difference = scheduledDate.difference(now);
-    print('⏰ Diferencia de tiempo: ${difference.inMinutes} minutos (${difference.inSeconds} segundos)');
     
     // Usar una frase aleatoria del modo brutal
     final randomQuote = MotivationalQuotes.getRandomQuote('brutal');
-
-    const androidDetails = AndroidNotificationDetails(
-      'motivational_channel',
-      'Motivational Notifications',
-      channelDescription: 'Notificaciones motivacionales programadas',
-      importance: Importance.max,
-      priority: Priority.high,
-      icon: '@mipmap/ic_launcher',
-      enableVibration: true,
-      playSound: true,
-      showWhen: true,
-      when: null,
-      usesChronometer: false,
-      channelShowBadge: true,
-      onlyAlertOnce: false,
-      autoCancel: true,
-      ongoing: false,
-      visibility: NotificationVisibility.public,
-      ticker: 'Nueva motivación',
-    );
-    
-    const details = NotificationDetails(android: androidDetails);
     
     final nowFormatted = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
     final scheduledFormatted = '${scheduledDate.hour.toString().padLeft(2, '0')}:${scheduledDate.minute.toString().padLeft(2, '0')}';
     
-    print('🕐 Hora actual: $nowFormatted');
-    print('📅 Programando notificación #$id para: $scheduledFormatted');
-    print('📆 Fecha completa: ${scheduledDate.year}-${scheduledDate.month}-${scheduledDate.day} $scheduledFormatted');
-    print('⏰ Segundos desde epoch: ${scheduledDate.millisecondsSinceEpoch}');
-    print('⏰ Diferencia de tiempo: ${difference.inMinutes} minutos (${difference.inSeconds} segundos)');
-    print('💬 Mensaje: $randomQuote');
+    print('📅 Programando notificación #$id');
+    print('   🕐 Hora actual: $nowFormatted');
+    print('   ⏰ Hora programada: $scheduledFormatted');
+    print('   ⏱️ En ${difference.inMinutes} minutos');
+    print('   💬 Mensaje: $randomQuote');
 
     try {
-      // NUEVO: Usar AlarmManager nativo de Android en lugar de flutter_local_notifications
-      print('🔧 Usando AlarmManager nativo para programar alarma...');
+      // USAR AlarmManager nativo de Android (el único que funciona)
+      print('   🔧 Usando AlarmManager nativo...');
       
       final result = await platform.invokeMethod('scheduleAlarm', {
         'hour': hour,
@@ -187,35 +159,13 @@ class NotificationService {
       });
       
       if (result == true) {
-        print('✅ Alarma programada exitosamente con AlarmManager nativo');
+        print('   ✅ Alarma programada exitosamente con AlarmManager nativo');
       } else {
-        print('❌ Error: No se pudo programar la alarma (sin permisos?)');
-      }
-      
-      // Verificar notificaciones pendientes
-      final pendingNotifications = await _notifications.pendingNotificationRequests();
-      print('📋 Total de notificaciones pendientes: ${pendingNotifications.length}');
-      for (var notif in pendingNotifications) {
-        print('   - ID: ${notif.id}, Título: ${notif.title}');
+        print('   ❌ Error: No se pudo programar la alarma (sin permisos?)');
       }
     } catch (e) {
-      print('❌ ERROR programando notificación: $e');
-      print('   Intentando con flutter_local_notifications como fallback...');
-      
-      // Fallback: intentar con el método original
-      try {
-        await _notifications.zonedSchedule(
-          id,
-          title,
-          randomQuote,
-          scheduledDate,
-          details,
-          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        );
-        print('✅ Notificación programada con fallback');
-      } catch (e2) {
-        print('❌ ERROR en fallback: $e2');
-      }
+      print('   ❌ ERROR programando notificación nativa: $e');
+      print('   ⚠️ Verifica que el MethodChannel esté configurado en MainActivity.kt');
     }
   }
   

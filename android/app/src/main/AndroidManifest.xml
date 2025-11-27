@@ -35,6 +35,15 @@
             android:exported="false"
             android:enabled="true"/>
         
+        <!-- Receiver para reprogramar alarmas después de reiniciar -->
+        <receiver android:name=".BootReceiver"
+            android:exported="true"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>
+        
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
