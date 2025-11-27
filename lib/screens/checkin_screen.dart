@@ -3,6 +3,7 @@ import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:intl/intl.dart';
 import '../models/checkin.dart';
 import '../providers/goals_provider.dart';
 import '../utils/quotes.dart';
@@ -61,6 +62,13 @@ class _CheckInScreenState extends State<CheckInScreen> {
     }
   }
 
+  String _formatTodayDate() {
+    final now = DateTime.now();
+    final dateFormat = DateFormat("EEEE, d 'de' MMMM 'de' yyyy", 'es');
+    String formatted = dateFormat.format(now);
+    return formatted[0].toUpperCase() + formatted.substring(1);
+  }
+
   @override
   Widget build(BuildContext context) {
     final goalsProvider = context.watch<GoalsProvider>();
@@ -86,8 +94,63 @@ class _CheckInScreenState extends State<CheckInScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Date Header
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFE9ECEF)),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2D3142).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.event_note,
+                      color: Color(0xFF2D3142),
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Registro de hoy',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF6C757D),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          _formatTodayDate(),
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF2D3142),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ).animate().fadeIn(duration: 400.ms).scale(duration: 400.ms),
+            
+            const SizedBox(height: 16),
+            
             // Progress Header
             Container(
+              width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -174,7 +237,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
               ),
             ).animate().fadeIn(duration: 500.ms).scale(duration: 500.ms),
             
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
             
             // Prompt motivacional
             Card(
@@ -213,77 +276,139 @@ class _CheckInScreenState extends State<CheckInScreen> {
               ),
             ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2, end: 0, delay: 200.ms),
             
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
             
-            // ¿Cumpliste?
-            const Text(
-              '¿Cumpliste tus compromisos?',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF2D3142),
+            // Card: ¿Cumpliste?
+            Card(
+              elevation: 0,
+              color: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: const BorderSide(color: Color(0xFFE9ECEF)),
               ),
-            ),
-            const SizedBox(height: 12),
-            
-            Row(
-              children: [
-                Expanded(
-                  child: _buildChoiceButton(
-                    context,
-                    label: 'SÍ ✓',
-                    value: true,
-                    color: const Color(0xFF51CF66),
-                    icon: Icons.check_circle,
-                  ),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2D3142).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(
+                            Icons.flag,
+                            color: Color(0xFF2D3142),
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Text(
+                          '¿Cumpliste tus compromisos?',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF2D3142),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildChoiceButton(
+                            context,
+                            label: 'SÍ ✓',
+                            value: true,
+                            color: const Color(0xFF51CF66),
+                            icon: Icons.check_circle,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildChoiceButton(
+                            context,
+                            label: 'NO ✗',
+                            value: false,
+                            color: const Color(0xFFFF6B6B),
+                            icon: Icons.cancel,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildChoiceButton(
-                    context,
-                    label: 'NO ✗',
-                    value: false,
-                    color: const Color(0xFFFF6B6B),
-                    icon: Icons.cancel,
-                  ),
-                ),
-              ],
+              ),
             ).animate().fadeIn(delay: 300.ms).scale(delay: 300.ms),
             
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
             
-            // Estado de ánimo
-            const Text(
-              '¿Cómo te sientes?',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF2D3142),
+            // Card: Estado de ánimo
+            Card(
+              elevation: 0,
+              color: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: const BorderSide(color: Color(0xFFE9ECEF)),
               ),
-            ),
-            const SizedBox(height: 12),
-            
-            Wrap(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2D3142).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(
+                            Icons.mood,
+                            color: Color(0xFF2D3142),
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Text(
+                          '¿Cómo te sientes?',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF2D3142),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Center(
+                      child: Wrap(
               spacing: 8,
               runSpacing: 8,
+              alignment: WrapAlignment.center,
               children: CheckInMood.values.map((mood) {
                 final isSelected = _selectedMood == mood;
                 return InkWell(
                   onTap: () => setState(() => _selectedMood = mood),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                     decoration: BoxDecoration(
-                      color: isSelected ? const Color(0xFF2D3142) : Colors.white,
-                      borderRadius: BorderRadius.circular(12),
+                      color: isSelected ? const Color(0xFF2D3142) : const Color(0xFFF8F9FA),
+                      borderRadius: BorderRadius.circular(10),
                       border: Border.all(
                         color: isSelected ? const Color(0xFF2D3142) : const Color(0xFFE9ECEF),
                         width: 2,
                       ),
                       boxShadow: isSelected ? [
                         BoxShadow(
-                          color: const Color(0xFF2D3142).withOpacity(0.2),
-                          blurRadius: 8,
+                          color: const Color(0xFF2D3142).withOpacity(0.15),
+                          blurRadius: 6,
                           offset: const Offset(0, 2),
                         ),
                       ] : null,
@@ -293,60 +418,97 @@ class _CheckInScreenState extends State<CheckInScreen> {
                       style: TextStyle(
                         color: isSelected ? Colors.white : const Color(0xFF2D3142),
                         fontWeight: FontWeight.w600,
-                        fontSize: 15,
+                        fontSize: 14,
                       ),
                     ),
                   ),
                 );
               }).toList(),
+                    ),
+                    ),
+                  ],
+                ),
+              ),
             ).animate().fadeIn(delay: 400.ms).slideX(begin: -0.1, end: 0, delay: 400.ms),
             
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
             
-            // Notas
-            const Text(
-              'Reflexiones del día',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF2D3142),
+            // Card: Notas
+            Card(
+              elevation: 0,
+              color: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: const BorderSide(color: Color(0xFFE9ECEF)),
               ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              '¿Qué aprendiste? ¿Qué harás mejor mañana?',
-              style: TextStyle(
-                fontSize: 13,
-                color: Color(0xFF6C757D),
-              ),
-            ),
-            const SizedBox(height: 12),
-            
-            TextField(
-              controller: _notesController,
-              maxLines: 5,
-              style: const TextStyle(fontSize: 15),
-              decoration: InputDecoration(
-                hintText: 'Escribe tus reflexiones aquí...',
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFE9ECEF)),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2D3142).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(
+                            Icons.edit_note,
+                            color: Color(0xFF2D3142),
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Text(
+                          'Reflexiones del día',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF2D3142),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      '¿Qué aprendiste? ¿Qué harás mejor mañana?',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF6C757D),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _notesController,
+                      maxLines: 5,
+                      style: const TextStyle(fontSize: 15),
+                      decoration: InputDecoration(
+                        hintText: 'Escribe tus reflexiones aquí...',
+                        filled: true,
+                        fillColor: const Color(0xFFF8F9FA),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFFE9ECEF)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFFE9ECEF)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFF2D3142), width: 2),
+                        ),
+                        contentPadding: const EdgeInsets.all(16),
+                      ),
+                    ),
+                  ],
                 ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFE9ECEF)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFF2D3142), width: 2),
-                ),
-                contentPadding: const EdgeInsets.all(16),
               ),
             ).animate().fadeIn(delay: 500.ms),
             
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
             
             // Botón guardar
             SizedBox(
@@ -356,29 +518,38 @@ class _CheckInScreenState extends State<CheckInScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF51CF66),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.all(18),
+                  padding: const EdgeInsets.symmetric(vertical: 18),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(14),
                   ),
-                  elevation: 0,
+                  elevation: 2,
+                  shadowColor: const Color(0xFF51CF66).withOpacity(0.3),
                   disabledBackgroundColor: const Color(0xFFE9ECEF),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.save, size: 20),
-                    SizedBox(width: 8),
-                    Text(
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Icon(Icons.check_circle, size: 20),
+                    ),
+                    const SizedBox(width: 12),
+                    const Text(
                       'Guardar Check-in',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 17,
                         fontWeight: FontWeight.bold,
+                        letterSpacing: 0.3,
                       ),
                     ),
                   ],
                 ),
               ),
-            ).animate().fadeIn(delay: 600.ms).scale(delay: 600.ms),
+            ).animate().fadeIn(delay: 600.ms).scale(delay: 600.ms, begin: const Offset(0.95, 0.95)),
             
             const SizedBox(height: 32),
             

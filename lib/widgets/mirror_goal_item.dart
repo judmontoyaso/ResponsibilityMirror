@@ -15,127 +15,171 @@ class MirrorGoalItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.white.withOpacity(0.1),
-            Colors.white.withOpacity(0.05),
+    final screenWidth = MediaQuery.of(context).size.width;
+    final cardSize = screenWidth - 32; // Ancho disponible (padding 16 a cada lado)
+    
+    if (isRule) {
+      // Estilo para REGLAS - TARJETA CUADRADA
+      return Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        width: cardSize,
+        height: cardSize,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(
+            color: const Color(0xFFBF40BF),
+            width: 3,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFBF40BF).withOpacity(0.2),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
           ],
         ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.2),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: isRule ? null : () => _toggleGoal(context),
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                if (!isRule)
-                  Container(
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: goal.isCompleted ? Colors.green : Colors.white.withOpacity(0.5),
-                        width: 2,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFBF40BF),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.shield,
+                  color: Colors.white,
+                  size: 40,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                goal.title,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2D3142),
+                ),
+              ),
+              if (goal.description != null) ...[
+                const SizedBox(height: 12),
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Text(
+                      goal.description!,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                        height: 1.4,
                       ),
-                      color: goal.isCompleted 
-                          ? Colors.green.withOpacity(0.3) 
-                          : Colors.transparent,
                     ),
-                    child: goal.isCompleted
-                        ? const Icon(
-                            Icons.check,
-                            color: Colors.green,
-                            size: 20,
-                          )
-                        : null,
-                  )
-                else
-                  Icon(
-                    Icons.military_tech,
-                    color: Colors.amber.withOpacity(0.8),
-                    size: 28,
                   ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                ),
+              ],
+            ],
+          ),
+        ),
+      );
+    } else {
+      // Estilo para METAS - TARJETA CUADRADA
+      return Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        width: cardSize,
+        height: cardSize,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(4),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 15,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF6B6B).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.flag,
+                  color: Color(0xFFFF6B6B),
+                  size: 40,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                goal.title,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF2D3142),
+                ),
+              ),
+              if (goal.description != null) ...[
+                const SizedBox(height: 12),
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Text(
+                      goal.description!,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                        height: 1.3,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+              if (goal.priority > 1) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: _getPriorityColor(goal.priority).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
+                      Icon(
+                        Icons.priority_high,
+                        color: _getPriorityColor(goal.priority),
+                        size: 18,
+                      ),
+                      const SizedBox(width: 4),
                       Text(
-                        goal.title,
+                        'Prioridad ${goal.priority}',
                         style: TextStyle(
-                          fontSize: isRule ? 18 : 16,
-                          fontWeight: isRule ? FontWeight.bold : FontWeight.w600,
-                          color: goal.isCompleted 
-                              ? Colors.white.withOpacity(0.4)
-                              : Colors.white.withOpacity(0.9),
-                          decoration: goal.isCompleted 
-                              ? TextDecoration.lineThrough 
-                              : null,
-                          letterSpacing: isRule ? 1 : 0,
+                          color: _getPriorityColor(goal.priority),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                      if (goal.description != null)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Text(
-                            goal.description!,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.white.withOpacity(0.5),
-                            ),
-                          ),
-                        ),
                     ],
                   ),
                 ),
-                if (goal.priority > 1)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: _getPriorityColor(goal.priority).withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: _getPriorityColor(goal.priority),
-                        width: 1,
-                      ),
-                    ),
-                    child: Text(
-                      '!',
-                      style: TextStyle(
-                        color: _getPriorityColor(goal.priority),
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
               ],
-            ),
+            ],
           ),
         ),
-      ),
-    );
-  }
-
-  void _toggleGoal(BuildContext context) {
-    context.read<GoalsProvider>().toggleGoal(goal.id);
+      );
+    }
   }
 
   Color _getPriorityColor(int priority) {

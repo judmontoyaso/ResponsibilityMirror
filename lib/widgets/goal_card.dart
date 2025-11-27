@@ -3,23 +3,31 @@ import 'package:provider/provider.dart';
 import '../models/goal.dart';
 import '../providers/goals_provider.dart';
 
-class GoalCard extends StatelessWidget {
+class GoalCard extends StatefulWidget {
   final Goal goal;
   final bool isRule;
+  final VoidCallback? onGoalCompleted;
 
   const GoalCard({
     super.key,
     required this.goal,
     this.isRule = false,
+    this.onGoalCompleted,
   });
+
+  @override
+  State<GoalCard> createState() => _GoalCardState();
+}
+
+class _GoalCardState extends State<GoalCard> {
 
   @override
   Widget build(BuildContext context) {
     // Calcular porcentaje de completitud
     int completionPercentage = 0;
-    if (goal.steps.isNotEmpty) {
-      int completedSteps = goal.stepsCompleted.where((completed) => completed).length;
-      completionPercentage = ((completedSteps / goal.steps.length) * 100).round();
+    if (widget.goal.steps.isNotEmpty) {
+      int completedSteps = widget.goal.stepsCompleted.where((completed) => completed).length;
+      completionPercentage = ((completedSteps / widget.goal.steps.length) * 100).round();
     }
     
     return Card(
@@ -28,14 +36,14 @@ class GoalCard extends StatelessWidget {
         children: [
           ListTile(
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            leading: isRule
+            leading: widget.isRule
                 ? Icon(
                     Icons.star,
                     color: Colors.amber,
                     size: 28,
                   )
                 : Checkbox(
-                    value: goal.isCompleted,
+                    value: widget.goal.isCompleted,
                     onChanged: (_) => _toggleGoal(context),
                     shape: const CircleBorder(),
                   ),
@@ -43,16 +51,16 @@ class GoalCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    goal.title,
+                    widget.goal.title,
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      decoration: goal.isCompleted ? TextDecoration.lineThrough : null,
-                      color: goal.isCompleted ? Colors.grey : null,
+                      decoration: widget.goal.isCompleted ? TextDecoration.lineThrough : null,
+                      color: widget.goal.isCompleted ? Colors.grey : null,
                     ),
                   ),
                 ),
-                if (goal.steps.isNotEmpty)
+                if (widget.goal.steps.isNotEmpty)
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
@@ -75,11 +83,11 @@ class GoalCard extends StatelessWidget {
                   ),
               ],
             ),
-            subtitle: goal.description != null
+            subtitle: widget.goal.description != null
                 ? Padding(
                     padding: const EdgeInsets.only(top: 4),
                     child: Text(
-                      goal.description!,
+                      widget.goal.description!,
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey[600],
@@ -121,7 +129,7 @@ class GoalCard extends StatelessWidget {
             ),
           ),
           // Mostrar pasos si existen
-          if (goal.steps.isNotEmpty)
+          if (widget.goal.steps.isNotEmpty)
             Container(
               margin: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
               padding: const EdgeInsets.all(12),
@@ -148,11 +156,11 @@ class GoalCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  ...goal.steps.asMap().entries.map((entry) {
+                  ...widget.goal.steps.asMap().entries.map((entry) {
                     final index = entry.key;
                     final step = entry.value;
-                    final isStepCompleted = index < goal.stepsCompleted.length 
-                        ? goal.stepsCompleted[index] 
+                    final isStepCompleted = index < widget.goal.stepsCompleted.length 
+                        ? widget.goal.stepsCompleted[index] 
                         : false;
                     
                     return Padding(
@@ -197,21 +205,29 @@ class GoalCard extends StatelessWidget {
   }
 
   void _toggleGoal(BuildContext context) {
-    context.read<GoalsProvider>().toggleGoal(goal.id);
+    // Capturar estado actual antes de cambiar
+    final wasCompleted = widget.goal.isCompleted;
+    
+    context.read<GoalsProvider>().toggleGoal(widget.goal.id);
+    
+    // Activar confeti si se está completando (no descompletando)
+    if (!wasCompleted && widget.onGoalCompleted != null) {
+      widget.onGoalCompleted!();
+    }
   }
 
   void _toggleStep(BuildContext context, int stepIndex) {
     final provider = context.read<GoalsProvider>();
-    final updatedStepsCompleted = List<bool>.from(goal.stepsCompleted);
+    final updatedStepsCompleted = List<bool>.from(widget.goal.stepsCompleted);
     
     // Asegurar que la lista tenga el tamaño correcto
-    while (updatedStepsCompleted.length < goal.steps.length) {
+    while (updatedStepsCompleted.length < widget.goal.steps.length) {
       updatedStepsCompleted.add(false);
     }
     
     updatedStepsCompleted[stepIndex] = !updatedStepsCompleted[stepIndex];
     
-    final updatedGoal = goal.copyWith(stepsCompleted: updatedStepsCompleted);
+    final updatedGoal = widget.goal.copyWith(stepsCompleted: updatedStepsCompleted);
     provider.updateGoal(updatedGoal);
   }
 
@@ -220,7 +236,7 @@ class GoalCard extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('¿Eliminar meta?'),
-        content: Text('¿Estás seguro de eliminar "${goal.title}"?'),
+        content: Text('¿Estás seguro de eliminar "${widget.goal.title}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -228,7 +244,7 @@ class GoalCard extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () {
-              context.read<GoalsProvider>().deleteGoal(goal.id);
+              context.read<GoalsProvider>().deleteGoal(widget.goal.id);
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -240,10 +256,10 @@ class GoalCard extends StatelessWidget {
   }
 
   void _editGoal(BuildContext context) {
-    final titleController = TextEditingController(text: goal.title);
-    final descController = TextEditingController(text: goal.description ?? '');
+    final titleController = TextEditingController(text: widget.goal.title);
+    final descController = TextEditingController(text: widget.goal.description ?? '');
     final stepController = TextEditingController();
-    final steps = List<String>.from(goal.steps);
+    final steps = List<String>.from(widget.goal.steps);
     
     showDialog(
       context: context,
@@ -324,7 +340,7 @@ class GoalCard extends StatelessWidget {
             ),
             ElevatedButton(
               onPressed: () {
-                final updated = goal.copyWith(
+                final updated = widget.goal.copyWith(
                   title: titleController.text,
                   description: descController.text.isEmpty ? null : descController.text,
                   steps: steps,

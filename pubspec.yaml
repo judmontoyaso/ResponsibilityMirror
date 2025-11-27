@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   
   # UI y iconos
   cupertino_icons: ^1.0.2
@@ -29,12 +31,17 @@ dependencies:
   timezone: ^0.10.1
   
   # Utilidades
-  intl: ^0.19.0
+  intl: ^0.20.2
   uuid: ^4.3.3
   
   # Animaciones y efectos
   flutter_animate: ^4.5.0
   shimmer: ^3.0.0
+  confetti: ^0.7.0
+  flutter_staggered_grid_view: ^0.7.0
+  
+  # IA con API de DigitalOcean Agent Platform
+  http: ^1.2.0
 
 dev_dependencies:
   flutter_test:

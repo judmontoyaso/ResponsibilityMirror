@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:intl/intl.dart';
 import '../providers/habits_provider.dart';
 import '../models/daily_habit.dart';
 
 class HabitsScreen extends StatelessWidget {
   const HabitsScreen({Key? key}) : super(key: key);
+
+  String _formatDate() {
+    final now = DateTime.now();
+    final dateFormat = DateFormat("EEEE, d 'de' MMMM", 'es');
+    String formatted = dateFormat.format(now);
+    // Capitalize first letter
+    return formatted[0].toUpperCase() + formatted.substring(1);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,6 +28,54 @@ class HabitsScreen extends StatelessWidget {
         builder: (context, habitsProvider, _) {
           return CustomScrollView(
             slivers: [
+              // Date Header
+              SliverToBoxAdapter(
+                child: Container(
+                  margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2D3142).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.calendar_today,
+                          color: Color(0xFF2D3142),
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        _formatDate(),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF2D3142),
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+                .animate()
+                .fadeIn(duration: 500.ms)
+                .slideY(begin: -0.3, end: 0, duration: 500.ms, curve: Curves.easeOutCubic),
+              ),
+              
               // Header con stats
               SliverToBoxAdapter(
                 child: Container(

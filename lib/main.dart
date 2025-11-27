@@ -5,6 +5,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 import 'providers/goals_provider.dart';
 import 'providers/notifications_provider.dart';
@@ -23,12 +25,16 @@ import 'config/theme.dart';
 import 'models/custom_phrase.dart';
 import 'models/personal_note.dart';
 import 'models/daily_todo.dart';
+import 'models/ai_generated_phrase.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // Inicializar zona horaria
   tz.initializeTimeZones();
+  
+  // Initialize date formatting for Spanish
+  await initializeDateFormatting('es', null);
   
   // Obtener offset de la zona horaria del dispositivo
   final localTime = DateTime.now();
@@ -63,6 +69,7 @@ void main() async {
   Hive.registerAdapter(CustomPhraseAdapter());
   Hive.registerAdapter(PersonalNoteAdapter());
   Hive.registerAdapter(DailyTodoAdapter());
+  Hive.registerAdapter(AIGeneratedPhraseAdapter());
   
   await Hive.openBox('goals');
   await Hive.openBox('notes');
@@ -101,6 +108,15 @@ class MyApp extends StatelessWidget {
         title: 'Responsibility Mirror',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.darkTheme,
+        locale: const Locale('es', 'ES'),
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('es', 'ES'),
+        ],
         home: const MainNavigator(),
       ),
     );

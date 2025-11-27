@@ -106,47 +106,6 @@ class SettingsScreen extends StatelessWidget {
             builder: (context, notifProvider, _) {
               return Column(
                 children: [
-                  Card(
-                    child: Column(
-                      children: [
-                        ListTile(
-                          leading: const Icon(Icons.style),
-                          title: const Text('Modo de notificaciones'),
-                          subtitle: Text(_getModeLabel(notifProvider.currentMode)),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          child: SegmentedButton<NotificationMode>(
-                            segments: const [
-                              ButtonSegment(
-                                value: NotificationMode.gogginsBrutal,
-                                label: Text('Brutal'),
-                                icon: Icon(Icons.fitness_center),
-                              ),
-                              ButtonSegment(
-                                value: NotificationMode.balanced,
-                                label: Text('Equilibrado'),
-                                icon: Icon(Icons.balance),
-                              ),
-                              ButtonSegment(
-                                value: NotificationMode.motivationalSoft,
-                                label: Text('Suave'),
-                                icon: Icon(Icons.favorite),
-                              ),
-                            ],
-                            selected: {notifProvider.currentMode},
-                            onSelectionChanged: (Set<NotificationMode> selected) {
-                              notifProvider.setMode(selected.first);
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                      ],
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 12),
-                  
                   // Lista de notificaciones
                   if (notifProvider.configs.isEmpty)
                     Card(
@@ -291,45 +250,44 @@ class SettingsScreen extends StatelessWidget {
           
           const SizedBox(height: 24),
           
-          // Acerca de
-          Text(
-            'Acerca de',
-            style: Theme.of(context).textTheme.displayMedium,
-          ),
-          const SizedBox(height: 12),
-          
+          // Desarrollado por
           Card(
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  const Icon(Icons.auto_awesome, size: 48),
+                  const Icon(Icons.code, size: 36, color: Color(0xFFFF6B6B)),
                   const SizedBox(height: 12),
                   const Text(
-                    'Responsibility Mirror',
+                    'Desarrollado por',
                     style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: Colors.grey,
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    'v1.0.0',
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Inspirado en David Goggins',
-                    style: TextStyle(
-                      fontStyle: FontStyle.italic,
-                      color: Colors.grey[600],
+                  ShaderMask(
+                    shaderCallback: (bounds) => const LinearGradient(
+                      colors: [Color(0xFFFF6B6B), Color(0xFFFFD93D)],
+                    ).createShader(bounds),
+                    child: const Text(
+                      '5breads',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 2,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '"El único enemigo que no puede derrotarte es el que vive dentro de ti."',
-                    style: TextStyle(color: Colors.grey[500]),
-                    textAlign: TextAlign.center,
+                    'Con ❤️ para ti',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                      fontStyle: FontStyle.italic,
+                    ),
                   ),
                 ],
               ),

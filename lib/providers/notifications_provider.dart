@@ -17,7 +17,6 @@ class NotificationsProvider extends ChangeNotifier {
 
   NotificationsProvider() {
     loadConfigs();
-    _ensureDefaultNotifications();
   }
 
   void _ensureDefaultNotifications() {
@@ -72,7 +71,37 @@ class NotificationsProvider extends ChangeNotifier {
     final mode = _notificationsBox.get('notificationMode', defaultValue: 1);
     _currentMode = NotificationMode.values[mode];
     
+    // Solo crear defaults si es la primera vez (nunca se han guardado notificaciones)
+    if (_configs.isEmpty && !_notificationsBox.containsKey('notifications_initialized')) {
+      _createDefaultNotifications();
+      _notificationsBox.put('notifications_initialized', true);
+    } else {
+      // Reprogramar notificaciones existentes
+      _scheduleAllNotifications();
+    }
+    
     notifyListeners();
+  }
+
+  void _createDefaultNotifications() {
+    print('🔔 Primera vez: Creando notificaciones por defecto...');
+    final defaultHours = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
+    
+    for (int hour in defaultHours) {
+      _configs.add(NotificationConfig(
+        id: _uuid.v4(),
+        message: 'Recordatorio brutal',
+        mode: NotificationMode.gogginsBrutal,
+        hours: [hour],
+        minutes: [0],
+        isEnabled: true,
+        isCustom: false,
+      ));
+    }
+    
+    print('✅ Creadas ${_configs.length} notificaciones por defecto');
+    saveConfigs();
+    _scheduleAllNotifications();
   }
 
   Future<void> saveConfigs() async {
@@ -185,30 +214,4 @@ class NotificationsProvider extends ChangeNotifier {
   }
 
   String createNewId() => _uuid.v4();
-
-  // Crear notificaciones por defecto
-  Future<void> initializeDefaultNotifications() async {
-    if (_configs.isEmpty) {
-      final defaults = [
-        NotificationConfig(
-          id: _uuid.v4(),
-          message: "Haz lo que dijiste, no lo que sientes.",
-          mode: NotificationMode.gogginsBrutal,
-          hours: [7, 12, 18],
-          isCustom: false,
-        ),
-        NotificationConfig(
-          id: _uuid.v4(),
-          message: "Avanza aunque sea un paso.",
-          mode: NotificationMode.motivationalSoft,
-          hours: [9, 15, 20],
-          isCustom: false,
-        ),
-      ];
-      
-      for (var config in defaults) {
-        await addNotification(config);
-      }
-    }
-  }
 }
